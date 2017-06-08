@@ -1,0 +1,118 @@
+{
+  "bemjson": {
+    "block": "page",
+    "content": [
+      {
+        "block": "img",
+        "mods": {
+          "lightbox": true
+        }
+      }
+    ]
+  },
+  "bemdecl": [
+    {
+      "block": "page"
+    },
+    {
+      "block": "img"
+    },
+    {
+      "block": "img",
+      "mod": {
+        "name": "lightbox",
+        "val": true
+      }
+    }
+  ],
+  "bemdeps": {
+    "styles": [
+      {
+        "block": "page"
+      },
+      {
+        "block": "page",
+        "elem": "script"
+      },
+      {
+        "block": "ua"
+      },
+      {
+        "block": "img"
+      },
+      {
+        "block": "jquery"
+      },
+      {
+        "block": "lightbox"
+      },
+      {
+        "block": "img",
+        "mod": {
+          "name": "lightbox",
+          "val": true
+        }
+      },
+      {
+        "block": "ua",
+        "elem": "modern"
+      }
+    ],
+    "scripts": [
+      {
+        "block": "page"
+      },
+      {
+        "block": "page",
+        "elem": "script"
+      },
+      {
+        "block": "ua"
+      },
+      {
+        "block": "img"
+      },
+      {
+        "block": "jquery"
+      },
+      {
+        "block": "lightbox"
+      },
+      {
+        "block": "img",
+        "mod": {
+          "name": "lightbox",
+          "val": true
+        }
+      }
+    ],
+    "html": [
+      {
+        "block": "page"
+      },
+      {
+        "block": "page",
+        "elem": "script"
+      },
+      {
+        "block": "ua"
+      },
+      {
+        "block": "img"
+      },
+      {
+        "block": "jquery"
+      },
+      {
+        "block": "lightbox"
+      },
+      {
+        "block": "img",
+        "mod": {
+          "name": "lightbox",
+          "val": true
+        }
+      }
+    ]
+  }
+}
