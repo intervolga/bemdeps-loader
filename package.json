@@ -4,7 +4,7 @@
   "description": "BemDeps loader for WebPack 2",
   "main": "index.js",
   "scripts": {
-    "lint": "eslint index.js lib test/index.js",
+    "lint": "eslint index.js lib test/index.js test/helpers",
     "test": "mocha --ui tdd test/"
   },
   "repository": {
@@ -37,7 +37,7 @@
     "eslint-plugin-promise": "^3.5.0",
     "eslint-plugin-standard": "^3.0.1",
     "expect.js": "^0.3.1",
-    "intervolga-bemjson-loader": "https://github.com/shkarupa-alex/bemjson-loader.git",
+    "intervolga-bemjson-loader": "git+https://github.com/shkarupa-alex/bemjson-loader.git",
     "mocha": "^3.3.0",
     "webpack": "^2.5.1"
   },
