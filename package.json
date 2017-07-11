@@ -26,9 +26,12 @@
     "webpack": "^2.0.0"
   },
   "dependencies": {
-    "loader-utils": "^1.1.0",
+    "@bem/cell": "^0.2.6",
     "@bem/deps": "^0.2.2",
+    "@bem/entity-name": "^1.5.0",
+    "@bem/fs-scheme": "^2.1.0",
     "bem-decl": "^0.3.0",
+    "loader-utils": "^1.1.0",
     "node-eval": "^1.1.0"
   },
   "devDependencies": {
@@ -37,6 +40,7 @@
     "eslint-plugin-promise": "^3.5.0",
     "eslint-plugin-standard": "^3.0.1",
     "expect.js": "^0.3.1",
+    "fs-extra": "^3.0.1",
     "intervolga-bemjson-loader": "git+https://github.com/shkarupa-alex/bemjson-loader.git",
     "mocha": "^3.3.0",
     "webpack": "^2.5.1"

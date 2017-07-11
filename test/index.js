@@ -1,8 +1,11 @@
+const fs = require('fs');
+const fse = require('fs-extra');
 const path = require('path');
 const expect = require('expect.js');
 const bemDeps = require('@bem/deps');
 const resolveDeps = require('../lib/resolve-deps');
 const runWebpack = require('./helpers/run-webpack');
+const watchWebpack = require('./helpers/watch-webpack');
 
 describe('bem-deps', () => {
   it('not fail with empty levels', () => {
@@ -122,6 +125,7 @@ describe('bem-deps', () => {
             {block: 'ua'},
             {block: 'jquery'},
             {block: 'lightbox'},
+            {block: 'img'},
             {block: 'img', mod: {name: 'lightbox', val: true}},
             {block: 'ua', elem: 'modern'},
           ],
@@ -131,6 +135,7 @@ describe('bem-deps', () => {
             {block: 'ua'},
             {block: 'jquery'},
             {block: 'lightbox'},
+            {block: 'img'},
             {block: 'img', mod: {name: 'lightbox', val: true}},
           ],
           'html': [
@@ -139,6 +144,7 @@ describe('bem-deps', () => {
             {block: 'ua'},
             {block: 'jquery'},
             {block: 'lightbox'},
+            {block: 'img'},
             {block: 'img', mod: {name: 'lightbox', val: true}},
           ],
         }
@@ -162,6 +168,194 @@ describe('bemdeps-loader', () => {
     return runWebpack(paths.source, false).then((result) => {
       expect(result).to.eql(require(paths.expected));
     });
+  });
+
+  it('should invalidate cache when .dep.js added', function(done) {
+    this.timeout(30000); // eslint-disable-line no-invalid-this
+
+    const paths = getCasePaths('bemjson-dep-add');
+
+    const source = path.join(__dirname, 'levels', 'blocks.common',
+      'add-dep', 'add-dep.deps.js');
+    const changed = path.join(__dirname, 'levels', 'blocks.common',
+      'add-dep', 'add-dep_changed.deps.js');
+
+    fs.writeFileSync(source, fs.readFileSync(changed));
+    fs.unlinkSync(source);
+
+    let firstRun = false;
+    let firstTimerId = null;
+    const cb = (result) => {
+      expect(typeof result).to.be.a('string');
+
+      if (!firstRun) {
+        if (firstTimerId) {
+          clearTimeout(firstTimerId);
+        }
+
+        firstTimerId = setTimeout(() => {
+          firstRun = true;
+          fs.writeFileSync(source, fs.readFileSync(changed));
+        }, 5000);
+      } else {
+        setTimeout(() => {
+          expect(result).to.eql(require(paths.expected));
+          done();
+        }, 5000);
+      }
+    };
+
+    watchWebpack(paths.source, true, cb);
+  });
+
+  it('should invalidate cache when .dep.js removed', function(done) {
+    this.timeout(30000); // eslint-disable-line no-invalid-this
+
+    const paths = getCasePaths('bemjson-dep-remove');
+
+    const source = path.join(__dirname, 'levels', 'blocks.common',
+      'remove-dep', 'remove-dep.deps.js');
+    const original = path.join(__dirname, 'levels', 'blocks.common',
+      'remove-dep', 'remove-dep_original.deps.js');
+
+    fs.writeFileSync(source, fs.readFileSync(original));
+
+    let firstRun = false;
+    let firstTimerId = null;
+    const cb = (result) => {
+      expect(typeof result).to.be.a('string');
+
+      if (!firstRun) {
+        if (firstTimerId) {
+          clearTimeout(firstTimerId);
+        }
+
+        firstTimerId = setTimeout(() => {
+          firstRun = true;
+          fs.unlinkSync(source);
+        }, 5000);
+      } else {
+        setTimeout(() => {
+          expect(result).to.eql(require(paths.expected));
+          done();
+        }, 5000);
+      }
+    };
+
+    watchWebpack(paths.source, true, cb);
+  });
+
+  it('should invalidate cache when .dep.js changed', function(done) {
+    this.timeout(30000); // eslint-disable-line no-invalid-this
+
+    const paths = getCasePaths('bemjson-dep-change');
+
+    const source = path.join(__dirname, 'levels', 'blocks.common',
+      'change-dep', 'change-dep.deps.js');
+    const original = path.join(__dirname, 'levels', 'blocks.common',
+      'change-dep', 'change-dep_original.deps.js');
+    const changed = path.join(__dirname, 'levels', 'blocks.common',
+      'change-dep', 'change-dep_changed.deps.js');
+
+    fs.writeFileSync(source, fs.readFileSync(original));
+
+    let firstRun = false;
+    let firstTimerId = null;
+    const cb = (result) => {
+      expect(typeof result).to.be.a('string');
+
+      if (!firstRun) {
+        if (firstTimerId) {
+          clearTimeout(firstTimerId);
+        }
+
+        firstTimerId = setTimeout(() => {
+          firstRun = true;
+          fs.writeFileSync(source, fs.readFileSync(changed));
+        }, 5000);
+      } else {
+        setTimeout(() => {
+          expect(result).to.eql(require(paths.expected));
+          done();
+        }, 5000);
+      }
+    };
+
+    watchWebpack(paths.source, true, cb);
+  });
+
+  it('should invalidate cache when block added', function(done) {
+    this.timeout(30000); // eslint-disable-line no-invalid-this
+
+    const paths = getCasePaths('bemjson-block-add');
+
+    const source = path.join(__dirname, 'levels', 'blocks.common',
+      'add-block');
+    const changed = path.join(__dirname, 'levels', 'blocks.common',
+      'add-block_original');
+
+    fse.removeSync(source);
+
+    let firstRun = false;
+    let firstTimerId = null;
+    const cb = (result) => {
+      expect(typeof result).to.be.a('string');
+
+      if (!firstRun) {
+        if (firstTimerId) {
+          clearTimeout(firstTimerId);
+        }
+
+        firstTimerId = setTimeout(() => {
+          firstRun = true;
+          fse.copySync(changed, source);
+        }, 5000);
+      } else {
+        setTimeout(() => {
+          expect(result).to.eql(require(paths.expected));
+          done();
+        }, 5000);
+      }
+    };
+
+    watchWebpack(paths.source, true, cb);
+  });
+
+  it('should invalidate cache when block removed', function(done) {
+    this.timeout(30000); // eslint-disable-line no-invalid-this
+
+    const paths = getCasePaths('bemjson-block-remove');
+
+    const source = path.join(__dirname, 'levels', 'blocks.common',
+      'remove-block');
+    const original = path.join(__dirname, 'levels', 'blocks.common',
+      'remove-block_original');
+
+    fse.copySync(original, source);
+
+    let firstRun = false;
+    let firstTimerId = null;
+    const cb = (result) => {
+      expect(typeof result).to.be.a('string');
+
+      if (!firstRun) {
+        if (firstTimerId) {
+          clearTimeout(firstTimerId);
+        }
+
+        firstTimerId = setTimeout(() => {
+          firstRun = true;
+          fse.removeSync(source);
+        }, 5000);
+      } else {
+        setTimeout(() => {
+          expect(result).to.eql(require(paths.expected));
+          done();
+        }, 5000);
+      }
+    };
+
+    watchWebpack(paths.source, true, cb);
   });
 });
 
