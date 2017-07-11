@@ -1,0 +1,36 @@
+{
+  "bemjson": {
+    "block": "change-dep"
+  },
+  "bemdecl": [
+    {
+      "block": "change-dep"
+    }
+  ],
+  "bemdeps": {
+    "styles": [
+      {
+        "block": "img"
+      },
+      {
+        "block": "change-dep"
+      }
+    ],
+    "scripts": [
+      {
+        "block": "img"
+      },
+      {
+        "block": "change-dep"
+      }
+    ],
+    "html": [
+      {
+        "block": "img"
+      },
+      {
+        "block": "change-dep"
+      }
+    ]
+  }
+}
