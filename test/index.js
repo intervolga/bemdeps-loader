@@ -4,16 +4,6 @@ const bemDeps = require('@bem/deps');
 const resolveDeps = require('../lib/resolve-deps');
 const runWebpack = require('./helpers/run-webpack');
 
-// const bemConfig = require('bem-config');
-// describe('bem-config', () => {
-//   it('should provide correct levels map', () => {
-//     return bemConfig().levelMap().then((levelMap) => {
-//       expect(levelMap).to.an('object');
-//       expect(Object.keys(levelMap).length).to.eql(4);
-//     });
-//   });
-// });
-
 describe('bem-deps', () => {
   it('not fail with empty levels', () => {
     const levels = [];
