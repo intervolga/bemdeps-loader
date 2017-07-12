@@ -43,7 +43,7 @@
     "fs-extra": "^3.0.1",
     "intervolga-bemjson-loader": "git+https://github.com/shkarupa-alex/bemjson-loader.git",
     "mocha": "^3.3.0",
-    "webpack": "^2.5.1"
+    "webpack": "^2.7.0"
   },
   "files": [
     "lib",
