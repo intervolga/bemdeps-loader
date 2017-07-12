@@ -8,7 +8,7 @@ const runWebpack = require('./helpers/run-webpack');
 const watchWebpack = require('./helpers/watch-webpack');
 
 describe('bem-deps', () => {
-  it('not fail with empty levels', () => {
+  it('should not fail with empty levels', () => {
     const levels = [];
 
     const declaration = [{block: 'page'}];
@@ -31,7 +31,7 @@ describe('bem-deps', () => {
     });
   });
 
-  it('not fail with empty techs', () => {
+  it('should not fail with empty techs', () => {
     const levels = [
       'test/levels/blocks.base',
       'test/levels/blocks.plugins',
@@ -70,7 +70,7 @@ describe('bem-deps', () => {
     });
   });
 
-  it('not fail with empty declarations', () => {
+  it('should not fail with empty declarations', () => {
     const levels = [
       'test/levels/blocks.base',
       'test/levels/blocks.plugins',
@@ -97,7 +97,7 @@ describe('bem-deps', () => {
     });
   });
 
-  it('resolve deps as expected', () => {
+  it('should resolve deps as expected', () => {
     const levels = [
       'test/levels/blocks.base',
       'test/levels/blocks.plugins',
