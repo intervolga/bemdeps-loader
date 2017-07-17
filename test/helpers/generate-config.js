@@ -37,13 +37,13 @@ module.exports = (entry, stringify = null) => {
         },
       },
       {
-        loader: 'intervolga-bemjson-loader',
-        options: {},
+        loader: '@intervolga/bemjson-loader',
       },
     ],
   };
   if (null !== stringify) {
-    loaderConfig.use[1].options = {stringify: stringify};
+    loaderConfig.use[1].options = loaderConfig.use[1].options || {};
+    loaderConfig.use[1].options.stringify = stringify;
   }
 
   config.module.loaders.push(loaderConfig);
