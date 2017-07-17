@@ -2,10 +2,35 @@ const fs = require('fs');
 const fse = require('fs-extra');
 const path = require('path');
 const expect = require('expect.js');
+const bemPath = require('../lib/bem-path');
 const bemDeps = require('@bem/deps');
 const resolveDeps = require('../lib/resolve-deps');
 const runWebpack = require('./helpers/run-webpack');
 const watchWebpack = require('./helpers/watch-webpack');
+
+describe('bem-path', () => {
+  it('should pass simple blocks', () => {
+    const dep = {block: 'page'};
+
+    const result = bemPath(dep, 'js');
+    expect(result).to.be(path.join('page', 'page.js'));
+  });
+
+  it('should resolve paths like @bem/fs-scheme +nested +original', () => {
+    const dep = {
+      block: 'page',
+      elem: 'script',
+      mod: {
+        name: 'async',
+        val: 'yes',
+      },
+    };
+
+    const result = bemPath(dep, 'js', 'blocks.common');
+    expect(result).to.be(path.join('blocks.common', 'page', '__script',
+      '_async', 'page__script_async_yes.js'));
+  });
+});
 
 describe('bem-deps', () => {
   it('should not fail with empty levels', () => {

@@ -37,7 +37,7 @@ module.exports = (entry, stringify = null) => {
         },
       },
       {
-        loader: 'intervolga-bemjson-loader',
+        loader: '@intervolga/bemjson-loader',
       },
     ],
   };
