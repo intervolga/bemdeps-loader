@@ -4,6 +4,7 @@ const path = require('path');
 const expect = require('expect.js');
 const bemPath = require('../lib/bem-path');
 const bemDeps = require('@bem/deps');
+const depsForDeps = require('../lib/deps-for-deps');
 const resolveDeps = require('../lib/resolve-deps');
 const runWebpack = require('./helpers/run-webpack');
 const watchWebpack = require('./helpers/watch-webpack');
@@ -29,6 +30,74 @@ describe('bem-path', () => {
     const result = bemPath(dep, 'js', 'blocks.common');
     expect(result).to.be(path.join('blocks.common', 'page', '__script',
       '_async', 'page__script_async_yes.js'));
+  });
+});
+
+describe('deps-for-deps', () => {
+  it('should produce expected output', () => {
+    const deps = {
+      styles: [
+        {
+          block: 'page',
+        },
+        {
+          block: 'page',
+          elem: 'script',
+        },
+        {
+          block: 'img',
+          mod: {
+            name: 'lightbox',
+            val: true,
+          },
+        },
+      ],
+    };
+
+    const result = depsForDeps(deps, [
+      'test/levels/blocks.01',
+      'test/levels/blocks.09',
+      'test/levels/blocks.09',
+    ]).map((p) => {
+      return p.split('bemdeps-loader')[1];
+    });
+
+    expect(result).to.be.an('array');
+    expect(result.length).to.be(16);
+    expect(result.indexOf('/test/levels/blocks.01')).to.be.above(-1);
+    expect(result.indexOf('/test/levels/blocks.01/page')).to.be.above(-1);
+    expect(result
+      .indexOf('/test/levels/blocks.01/page/__script')).to.be.above(-1);
+    expect(result
+      .indexOf('/test/levels/blocks.01/page/__script/page__script.deps.js'))
+      .to.be.above(-1);
+  });
+
+  it('should be fast', () => {
+    const source = path.join(__dirname, 'cases', 'bemjson-speedtest',
+      'source.bemdeps.json');
+    const deps = require(source);
+
+    const start = process.hrtime();
+    depsForDeps(deps, [
+      'test/levels/blocks.01',
+      'test/levels/blocks.02',
+      'test/levels/blocks.03',
+      'test/levels/blocks.04',
+      'test/levels/blocks.05',
+      'test/levels/blocks.06',
+      'test/levels/blocks.07',
+      'test/levels/blocks.08',
+      'test/levels/blocks.09',
+      'test/levels/blocks.09',
+      'test/levels/blocks.09',
+      'test/levels/blocks.09',
+    ]);
+    const elapsed = process.hrtime(start);
+
+    expect(elapsed).to.be.an('array');
+    expect(elapsed[0]).to.be(0);
+    expect(elapsed[1] / 1000000).to.be.below(50);
   });
 });
 
@@ -119,6 +188,43 @@ describe('bem-deps', () => {
           'html': [],
         }
       );
+    });
+  });
+
+  it('should resolve deps fast', () => {
+    const levels = [
+      'node_modules/bem-core/common.blocks',
+      'node_modules/bem-core/desktop.blocks',
+      'node_modules/bem-components/common.blocks',
+      'node_modules/bem-components/desktop.blocks',
+      'node_modules/bem-components/design/common.blocks',
+      'node_modules/bem-components/design/desktop.blocks',
+      'test/levels/blocks.base',
+      'test/levels/blocks.plugins',
+      'test/levels/blocks.common',
+    ];
+
+    const source = path.join(__dirname, 'cases', 'bemjson-speedtest',
+      'source.bemdecl.json');
+    const declaration = require(source);
+
+    const techMap = {
+      styles: ['css', 'scss'],
+      scripts: ['js', 'babel.js'],
+      html: ['bh.js'],
+    };
+
+    let start;
+    return bemDeps.load({levels: levels}).then((relations) => {
+      start = process.hrtime();
+
+      return resolveDeps(declaration, relations, techMap);
+    }).then((relations) => {
+      const elapsed = process.hrtime(start);
+
+      expect(elapsed).to.be.an('array');
+      expect(elapsed[0]).to.be(0);
+      expect(elapsed[1] / 1000000).to.be.below(600); // TODO: make it more fast
     });
   });
 
