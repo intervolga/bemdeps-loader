@@ -1,118 +1,24 @@
-{
-  "bemjson": {
-    "block": "page",
-    "content": [
-      {
-        "block": "img",
-        "mods": {
-          "lightbox": true
-        }
-      }
-    ]
-  },
-  "bemdecl": [
-    {
-      "block": "page"
-    },
-    {
-      "block": "img"
-    },
-    {
-      "block": "img",
-      "mod": {
-        "name": "lightbox",
-        "val": true
-      }
-    }
-  ],
-  "bemdeps": {
-    "styles": [
-      {
-        "block": "page"
-      },
-      {
-        "block": "page",
-        "elem": "script"
-      },
-      {
-        "block": "ua"
-      },
-      {
-        "block": "img"
-      },
-      {
-        "block": "jquery"
-      },
-      {
-        "block": "lightbox"
-      },
-      {
-        "block": "img",
-        "mod": {
-          "name": "lightbox",
-          "val": true
-        }
-      },
-      {
-        "block": "ua",
-        "elem": "modern"
-      }
-    ],
-    "scripts": [
-      {
-        "block": "page"
-      },
-      {
-        "block": "page",
-        "elem": "script"
-      },
-      {
-        "block": "ua"
-      },
-      {
-        "block": "img"
-      },
-      {
-        "block": "jquery"
-      },
-      {
-        "block": "lightbox"
-      },
-      {
-        "block": "img",
-        "mod": {
-          "name": "lightbox",
-          "val": true
-        }
-      }
-    ],
-    "html": [
-      {
-        "block": "page"
-      },
-      {
-        "block": "page",
-        "elem": "script"
-      },
-      {
-        "block": "ua"
-      },
-      {
-        "block": "img"
-      },
-      {
-        "block": "jquery"
-      },
-      {
-        "block": "lightbox"
-      },
-      {
-        "block": "img",
-        "mod": {
-          "name": "lightbox",
-          "val": true
-        }
-      }
-    ]
-  }
-}
+[
+  "test/levels/blocks.base/page/page.css",
+  "test/levels/blocks.base/page/page.bh.js",
+  "test/levels/blocks.base/page/__script/page__script.bh.js",
+  "test/levels/blocks.base/ua/ua.css",
+  "test/levels/blocks.base/ua/ua.js",
+  "test/levels/blocks.base/ua/__modern/ua__modern.css",
+  "test/levels/blocks.base/ua/__modern/ua__modern.babel.js",
+  "test/levels/blocks.plugins/datepicker/datepicker.scss",
+  "test/levels/blocks.plugins/datepicker/datepicker.js",
+  "test/levels/blocks.plugins/jquery/jquery.js",
+  "test/levels/blocks.plugins/lightbox/lightbox.css",
+  "test/levels/blocks.plugins/lightbox/lightbox.js",
+  "test/levels/blocks.plugins/lightbox/lightbox.bh.js",
+  "test/levels/blocks.common/datepicker/datepicker.css",
+  "test/levels/blocks.common/datepicker/datepicker.js",
+  "test/levels/blocks.common/datepicker/_popup/datepicker_popup.js",
+  "test/levels/blocks.common/rating/rating.scss",
+  "test/levels/blocks.common/rating/rating.js",
+  "test/levels/blocks.project/news-list/news-list.css",
+  "test/levels/blocks.project/news-list/news-list.bh.js",
+  "test/levels/blocks.project/news-list/__item/news-list__item.css",
+  "test/levels/blocks.project/news-list/__item/news-list__item.bh.js"
+]

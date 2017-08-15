@@ -1,11 +1,12 @@
 {
   "name": "@intervolga/bemdeps-loader",
   "version": "1.1.1",
-  "description": "BEM DEPS (https://en.bem.info/platform/deps/) loader for WebPack 2+",
+  "description": "BEMDEPS (https://en.bem.info/platform/deps/) loader for WebPack 2+",
   "main": "index.js",
   "scripts": {
+    "mocha": "mocha --ui tdd test/",
     "lint": "eslint index.js lib test/index.js test/helpers",
-    "test": "npm run lint && mocha --ui tdd test/"
+    "test": "npm run lint && npm run mocha"
   },
   "repository": {
     "type": "git",
@@ -26,14 +27,13 @@
     "webpack": "^3.0.0"
   },
   "dependencies": {
-    "@bem/deps": "^0.2.2",
-    "@bem/naming": "^2.0.0-6",
-    "bem-decl": "^0.3.0",
     "loader-utils": "^1.1.0",
     "node-eval": "^1.1.0"
   },
   "devDependencies": {
+    "@intervolga/bemdecl-loader": "^1.0.0",
     "@intervolga/bemjson-loader": "^1.1.0",
+    "@intervolga/eval-loader": "^1.0.1",
     "bem-components": "^6.0.1",
     "bem-core": "^4.2.1",
     "eslint": "^3.19.0",
