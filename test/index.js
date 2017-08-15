@@ -1,13 +1,105 @@
-const fs = require('fs');
 const fse = require('fs-extra');
 const path = require('path');
 const expect = require('expect.js');
+const fileExist = require('../lib/file-exist');
+const dirExist = require('../lib/dir-exist');
+const firstExist = require('../lib/first-exist');
 const bemPath = require('../lib/bem-path');
-const bemDeps = require('@bem/deps');
-const depsForDeps = require('../lib/deps-for-deps');
-const resolveDeps = require('../lib/resolve-deps');
+const bemDirs = require('../lib/bem-dirs');
+const dirsExist = require('../lib/dirs-exist');
+const depToFS = require('../lib/dep-to-fs');
+const resolveFS = require('../lib/resolve-fs');
 const runWebpack = require('./helpers/run-webpack');
 const watchWebpack = require('./helpers/watch-webpack');
+
+describe('file-exist', () => {
+  it('should resolve to file name if exist', () => {
+    return fileExist(__filename).then((result) => {
+      expect(result).to.contain(__filename);
+    });
+  });
+
+  it('should resolve to false if directory provided', () => {
+    return fileExist(__dirname).then((result) => {
+      expect(result).to.be(false);
+    });
+  });
+
+  it('should resolve to false if file not exist', () => {
+    return fileExist(__filename + '.tmp123').then((result) => {
+      expect(result).to.be(false);
+    });
+  });
+});
+
+describe('dir-exist', () => {
+  it('should resolve to dir name if exist', () => {
+    return dirExist(__dirname).then((result) => {
+      expect(result).to.contain(__dirname);
+    });
+  });
+
+  it('should resolve to false if file provided', () => {
+    return dirExist(__filename).then((result) => {
+      expect(result).to.be(false);
+    });
+  });
+
+  it('should resolve to false if dir not exist', () => {
+    return dirExist(__dirname + 'tmp123').then((result) => {
+      expect(result).to.be(false);
+    });
+  });
+});
+
+describe('dirs-exist', () => {
+  it('should resolve as expected', () => {
+    return dirsExist([
+      'test',
+      'test/levels/blocks.base/page/__script/_async',
+      'test/levels/blocks.base/page/__script',
+      'test/levels/blocks.base/page',
+      'test/levels/blocks.base0/page/__script/_async',
+      'test/levels/blocks.base0/page/__script',
+      'test/levels/blocks.base0/page',
+    ]).then((result) => {
+      expect(result).to.eql({
+        'test': true,
+        'test/levels/blocks.base/page/__script/_async': true,
+        'test/levels/blocks.base/page/__script': true,
+        'test/levels/blocks.base/page': true,
+        'test/levels/blocks.base0/page/__script/_async': false,
+        'test/levels/blocks.base0/page/__script': false,
+        'test/levels/blocks.base0/page': false,
+      });
+    });
+  });
+});
+
+describe('first-exist', () => {
+  it('should resolve to file name if file exist', () => {
+    return firstExist([__filename]).then((result) => {
+      expect(result).to.contain(__filename);
+    });
+  });
+
+  it('should resolve to false if file not exist', () => {
+    return firstExist([]).then((result) => {
+      expect(result).to.be(false);
+    });
+  });
+
+  it('should resolve to first existing file name', () => {
+    return firstExist([
+      __dirname,
+      __filename + '.tmp123',
+      __filename,
+      path.join(__dirname, 'cases', 'normal-bemjson', 'source.bemjson.js'),
+    ]).then((result) => {
+      expect(result).to.contain(__filename);
+    });
+  });
+});
 
 describe('bem-path', () => {
   it('should pass simple blocks', () => {
@@ -33,79 +125,55 @@ describe('bem-path', () => {
   });
 });
 
-describe('deps-for-deps', () => {
-  it('should produce expected output', () => {
-    const deps = {
-      styles: [
-        {
-          block: 'page',
-        },
-        {
-          block: 'page',
-          elem: 'script',
-        },
-        {
-          block: 'img',
-          mod: {
-            name: 'lightbox',
-            val: true,
-          },
-        },
-      ],
-    };
-
-    const result = depsForDeps(deps, [
-      'test/levels/blocks.01',
-      'test/levels/blocks.09',
-      'test/levels/blocks.09',
-    ]).map((p) => {
-      return p.split('bemdeps-loader')[1];
-    });
-
-    expect(result).to.be.an('array');
-    expect(result.length).to.be(16);
-    expect(result.indexOf('/test/levels/blocks.01')).to.be.above(-1);
-    expect(result.indexOf('/test/levels/blocks.01/page')).to.be.above(-1);
-    expect(result
-      .indexOf('/test/levels/blocks.01/page/__script')).to.be.above(-1);
-    expect(result
-      .indexOf('/test/levels/blocks.01/page/__script/page__script.deps.js'))
-      .to.be.above(-1);
-  });
-
-  it('should be fast', () => {
+describe('bem-dirs', () => {
+  it('should resolve dirs as expected', () => {
     const source = path.join(__dirname, 'cases', 'bemjson-speedtest',
       'source.bemdeps.json');
     const deps = require(source);
+    const result = bemDirs(deps);
 
+    expect(result).to.be.an('array');
+    expect(result.length).to.be(126);
+  });
+});
+
+describe('dep-to-fs', () => {
+  it('should resolve to first existing tech implementation', () => {
+    const result = depToFS(
+      {block: 'page'},
+      ['css', 'scss'],
+      'test/levels/blocks.base'
+    );
+    expect(result).to.be.an('array');
+    expect(result.length).to.be(2);
+    expect(result[0]).to.contain('test/levels/blocks.base/page/page.css');
+  });
+
+  it('should be fast', () => {
     const start = process.hrtime();
-    depsForDeps(deps, [
-      'test/levels/blocks.01',
-      'test/levels/blocks.02',
-      'test/levels/blocks.03',
-      'test/levels/blocks.04',
-      'test/levels/blocks.05',
-      'test/levels/blocks.06',
-      'test/levels/blocks.07',
-      'test/levels/blocks.08',
-      'test/levels/blocks.09',
-      'test/levels/blocks.09',
-      'test/levels/blocks.09',
-      'test/levels/blocks.09',
-    ]);
+
+    for (let i = 0; i < 10000; i++) {
+      depToFS(
+        {block: 'page'},
+        ['css', 'scss'],
+        'test/levels/blocks.base'
+      );
+    }
     const elapsed = process.hrtime(start);
 
     expect(elapsed).to.be.an('array');
     expect(elapsed[0]).to.be(0);
-    expect(elapsed[1] / 1000000).to.be.below(50);
   });
 });
 
-describe('bem-deps', () => {
-  it('should not fail with empty levels', () => {
-    const levels = [];
-
-    const declaration = [{block: 'page'}];
+describe('resolve-fs', () => {
+  it('should resolve to correct file list', () => {
+    const levels = [
+      'test/levels/blocks.base',
+      'test/levels/blocks.plugins',
+      'test/levels/blocks.common',
+      'test/levels/blocks.project',
+    ];
 
     const techMap = {
       styles: ['css', 'scss'],
@@ -113,85 +181,28 @@ describe('bem-deps', () => {
       html: ['bh.js'],
     };
 
-    return bemDeps.load({levels: levels}).then((relations) => {
-      return resolveDeps(declaration, relations, techMap);
-    }).then((relations) => {
-      expect(relations).to.eql({
-          'styles': [{block: 'page'}],
-          'scripts': [{block: 'page'}],
-          'html': [{block: 'page'}],
-        }
-      );
-    });
-  });
-
-  it('should not fail with empty techs', () => {
-    const levels = [
-      'test/levels/blocks.base',
-      'test/levels/blocks.plugins',
-      'test/levels/blocks.common',
+    const deps = [
+      {block: 'page'},
+      {block: 'datepicker'},
     ];
 
-    const declaration = [{block: 'page'}];
+    return resolveFS(deps, techMap, levels).then((result) => {
+      expect(result).to.be.a('object');
 
-    const techMap = {
-      styles: [],
-      scripts: [],
-      html: [],
-    };
+      expect(result.found).to.be.an('array');
+      expect(result.found.length).to.be(6);
+      expect(result.found[0]).to
+        .contain('test/levels/blocks.base/page/page.css');
 
-    return bemDeps.load({levels: levels}).then((relations) => {
-      return resolveDeps(declaration, relations, techMap);
-    }).then((relations) => {
-      expect(relations).to.eql({
-          'styles': [
-            {block: 'page'},
-            {block: 'page', elem: 'script'},
-            {block: 'ua'},
-          ],
-          'scripts': [
-            {block: 'page'},
-            {block: 'page', elem: 'script'},
-            {block: 'ua'},
-          ],
-          'html': [
-            {block: 'page'},
-            {block: 'page', elem: 'script'},
-            {block: 'ua'},
-          ],
-        }
-      );
+      expect(result.checked).to.be.an('array');
+      expect(result.checked.length).to.be(5);
+
+      expect(result.skipped).to.be.an('array');
+      expect(result.skipped.length).to.be(5);
     });
   });
 
-  it('should not fail with empty declarations', () => {
-    const levels = [
-      'test/levels/blocks.base',
-      'test/levels/blocks.plugins',
-      'test/levels/blocks.common',
-    ];
-
-    const declaration = [];
-
-    const techMap = {
-      styles: ['css', 'scss'],
-      scripts: ['js', 'babel.js'],
-      html: ['bh.js'],
-    };
-
-    return bemDeps.load({levels: levels}).then((relations) => {
-      return resolveDeps(declaration, relations, techMap);
-    }).then((relations) => {
-      expect(relations).to.eql({
-          'styles': [],
-          'scripts': [],
-          'html': [],
-        }
-      );
-    });
-  });
-
-  it('should resolve deps fast', () => {
+  it('should resolve fs fast', () => {
     const levels = [
       'node_modules/bem-core/common.blocks',
       'node_modules/bem-core/desktop.blocks',
@@ -204,87 +215,28 @@ describe('bem-deps', () => {
       'test/levels/blocks.common',
     ];
 
-    const source = path.join(__dirname, 'cases', 'bemjson-speedtest',
-      'source.bemdecl.json');
-    const declaration = require(source);
-
     const techMap = {
       styles: ['css', 'scss'],
       scripts: ['js', 'babel.js'],
       html: ['bh.js'],
     };
 
-    let start;
-    return bemDeps.load({levels: levels}).then((relations) => {
-      start = process.hrtime();
+    const source = path.join(__dirname, 'cases', 'bemjson-speedtest',
+      'source.bemdeps.json');
+    const deps = require(source);
 
-      return resolveDeps(declaration, relations, techMap);
-    }).then((relations) => {
+    const start = process.hrtime();
+    return resolveFS(deps, techMap, levels).then(() => {
       const elapsed = process.hrtime(start);
 
       expect(elapsed).to.be.an('array');
       expect(elapsed[0]).to.be(0);
-      expect(elapsed[1] / 1000000).to.be.below(600); // TODO: make it more fast
-    });
-  });
-
-  it('should resolve deps as expected', () => {
-    const levels = [
-      'test/levels/blocks.base',
-      'test/levels/blocks.plugins',
-      'test/levels/blocks.common',
-    ];
-
-    const declaration = [
-      {block: 'page'},
-      {block: 'img', modName: 'lightbox', modVal: true},
-    ];
-
-    const techMap = {
-      styles: ['css', 'scss'],
-      scripts: ['js', 'babel.js'],
-      html: ['bh.js'],
-    };
-
-    return bemDeps.load({levels: levels}).then((relations) => {
-      return resolveDeps(declaration, relations, techMap);
-    }).then((relations) => {
-      expect(relations).to.eql({
-          'styles': [
-            {block: 'page'},
-            {block: 'page', elem: 'script'},
-            {block: 'ua'},
-            {block: 'jquery'},
-            {block: 'lightbox'},
-            {block: 'img'},
-            {block: 'img', mod: {name: 'lightbox', val: true}},
-            {block: 'ua', elem: 'modern'},
-          ],
-          'scripts': [
-            {block: 'page'},
-            {block: 'page', elem: 'script'},
-            {block: 'ua'},
-            {block: 'jquery'},
-            {block: 'lightbox'},
-            {block: 'img'},
-            {block: 'img', mod: {name: 'lightbox', val: true}},
-          ],
-          'html': [
-            {block: 'page'},
-            {block: 'page', elem: 'script'},
-            {block: 'ua'},
-            {block: 'jquery'},
-            {block: 'lightbox'},
-            {block: 'img'},
-            {block: 'img', mod: {name: 'lightbox', val: true}},
-          ],
-        }
-      );
+      expect(elapsed[1] / 1000000).to.be.below(250);
     });
   });
 });
 
-describe('bemdeps-loader', () => {
+describe('bemfs-loader', () => {
   it('should pass normal bemjson', () => {
     const paths = getCasePaths('normal-bemjson');
 
@@ -293,138 +245,18 @@ describe('bemdeps-loader', () => {
     });
   });
 
-  it('should pass normal bemjson without stringify', () => {
-    const paths = getCasePaths('normal-bemjson');
-
-    return runWebpack(paths.source, false).then((result) => {
-      expect(result).to.eql(require(paths.expected));
-    });
-  });
-
-  it('should invalidate cache when .dep.js added', function(done) {
+  it('should invalidate cache when prioritized asset added', function(done) {
     this.timeout(30000); // eslint-disable-line no-invalid-this
 
-    const paths = getCasePaths('bemjson-dep-add');
+    const paths = getCasePaths('bemjson-asset-add');
 
     const source = path.join(__dirname, 'levels', 'blocks.common',
-      'add-dep', 'add-dep.deps.js');
+      'add-asset', 'add-asset.css');
     const changed = path.join(__dirname, 'levels', 'blocks.common',
-      'add-dep', 'add-dep_changed.deps.js');
+      'add-asset', 'add-asset_changed.css');
 
-    fs.writeFileSync(source, fs.readFileSync(changed));
-    fs.unlinkSync(source);
 
-    let firstRun = false;
-    let firstTimerId = null;
-    const cb = (result) => {
-      expect(typeof result).to.be.a('string');
-
-      if (!firstRun) {
-        if (firstTimerId) {
-          clearTimeout(firstTimerId);
-        }
-
-        firstTimerId = setTimeout(() => {
-          firstRun = true;
-          fs.writeFileSync(source, fs.readFileSync(changed));
-        }, 5000);
-      } else {
-        setTimeout(() => {
-          expect(result).to.eql(require(paths.expected));
-          done();
-        }, 5000);
-      }
-    };
-
-    watchWebpack(paths.source, true, cb);
-  });
-
-  it('should invalidate cache when .dep.js removed', function(done) {
-    this.timeout(30000); // eslint-disable-line no-invalid-this
-
-    const paths = getCasePaths('bemjson-dep-remove');
-
-    const source = path.join(__dirname, 'levels', 'blocks.common',
-      'remove-dep', 'remove-dep.deps.js');
-    const original = path.join(__dirname, 'levels', 'blocks.common',
-      'remove-dep', 'remove-dep_original.deps.js');
-
-    fs.writeFileSync(source, fs.readFileSync(original));
-
-    let firstRun = false;
-    let firstTimerId = null;
-    const cb = (result) => {
-      expect(typeof result).to.be.a('string');
-
-      if (!firstRun) {
-        if (firstTimerId) {
-          clearTimeout(firstTimerId);
-        }
-
-        firstTimerId = setTimeout(() => {
-          firstRun = true;
-          fs.unlinkSync(source);
-        }, 5000);
-      } else {
-        setTimeout(() => {
-          expect(result).to.eql(require(paths.expected));
-          done();
-        }, 5000);
-      }
-    };
-
-    watchWebpack(paths.source, true, cb);
-  });
-
-  it('should invalidate cache when .dep.js changed', function(done) {
-    this.timeout(30000); // eslint-disable-line no-invalid-this
-
-    const paths = getCasePaths('bemjson-dep-change');
-
-    const source = path.join(__dirname, 'levels', 'blocks.common',
-      'change-dep', 'change-dep.deps.js');
-    const original = path.join(__dirname, 'levels', 'blocks.common',
-      'change-dep', 'change-dep_original.deps.js');
-    const changed = path.join(__dirname, 'levels', 'blocks.common',
-      'change-dep', 'change-dep_changed.deps.js');
-
-    fs.writeFileSync(source, fs.readFileSync(original));
-
-    let firstRun = false;
-    let firstTimerId = null;
-    const cb = (result) => {
-      expect(typeof result).to.be.a('string');
-
-      if (!firstRun) {
-        if (firstTimerId) {
-          clearTimeout(firstTimerId);
-        }
-
-        firstTimerId = setTimeout(() => {
-          firstRun = true;
-          fs.writeFileSync(source, fs.readFileSync(changed));
-        }, 5000);
-      } else {
-        setTimeout(() => {
-          expect(result).to.eql(require(paths.expected));
-          done();
-        }, 5000);
-      }
-    };
-
-    watchWebpack(paths.source, true, cb);
-  });
-
-  it('should invalidate cache when block added', function(done) {
-    this.timeout(30000); // eslint-disable-line no-invalid-this
-
-    const paths = getCasePaths('bemjson-block-add');
-
-    const source = path.join(__dirname, 'levels', 'blocks.common',
-      'add-block');
-    const changed = path.join(__dirname, 'levels', 'blocks.common',
-      'add-block_original');
-
+    fse.copySync(changed, source);
     fse.removeSync(source);
 
     let firstRun = false;
@@ -449,18 +281,18 @@ describe('bemdeps-loader', () => {
       }
     };
 
-    watchWebpack(paths.source, true, cb);
+    watchWebpack(paths.source, cb);
   });
 
-  it('should invalidate cache when block removed', function(done) {
+  it('should invalidate cache when prioritized asset removed', function(done) {
     this.timeout(30000); // eslint-disable-line no-invalid-this
 
-    const paths = getCasePaths('bemjson-block-remove');
+    const paths = getCasePaths('bemjson-asset-remove');
 
     const source = path.join(__dirname, 'levels', 'blocks.common',
-      'remove-block');
+      'remove-asset', 'remove-asset.css');
     const original = path.join(__dirname, 'levels', 'blocks.common',
-      'remove-block_original');
+      'remove-asset', 'remove-asset_original.css');
 
     fse.copySync(original, source);
 
@@ -486,7 +318,7 @@ describe('bemdeps-loader', () => {
       }
     };
 
-    watchWebpack(paths.source, true, cb);
+    watchWebpack(paths.source, cb);
   });
 });
 
