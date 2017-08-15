@@ -11,7 +11,6 @@ const resolveFS = require('./lib/resolve-fs');
 function bemDepsLoader(source) {
   const callback = this.async();
   const options = {
-    stringify: true,
     levels: [],
     techMap: {},
   };
