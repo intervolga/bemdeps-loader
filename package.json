@@ -1,6 +1,6 @@
 {
   "name": "@intervolga/bemdeps-loader",
-  "version": "1.1.5",
+  "version": "1.1.6",
   "description": "BEMDEPS (https://en.bem.info/platform/deps/) loader for WebPack 2+",
   "main": "index.js",
   "scripts": {
