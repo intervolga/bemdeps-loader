@@ -128,6 +128,7 @@ describe('bemfs-loader', () => {
     let firstRun = false;
     let firstTimerId = null;
     let secondRun = false;
+    let watching;
     const cb = (result) => {
       expect(typeof result).to.be.a('string');
 
@@ -143,13 +144,14 @@ describe('bemfs-loader', () => {
       } else if (!secondRun) {
         secondRun = true;
         setTimeout(() => {
+          watching && watching.close();
           expect(result).to.eql(require(paths.expected));
           done();
         }, 5000);
       }
     };
 
-    watchWebpack(paths.source, cb);
+    watching = watchWebpack(paths.source, cb);
   });
 
   it('should invalidate cache when prioritized asset removed', function(done) {
@@ -167,6 +169,7 @@ describe('bemfs-loader', () => {
     let firstRun = false;
     let firstTimerId = null;
     let secondRun = false;
+    let watching;
     const cb = (result) => {
       expect(typeof result).to.be.a('string');
 
@@ -182,13 +185,14 @@ describe('bemfs-loader', () => {
       } else if (!secondRun) {
         secondRun = true;
         setTimeout(() => {
+          watching && watching.close();
           expect(result).to.eql(require(paths.expected));
           done();
         }, 5000);
       }
     };
 
-    watchWebpack(paths.source, cb);
+    watching = watchWebpack(paths.source, cb);
   });
 });
 
